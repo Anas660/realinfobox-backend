@@ -1,0 +1,61 @@
+Resources:
+  SNSTopicEmailDelivery:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ${self:custom.stage}-SNSTopicEmailDelivery
+  SQSQueueEmailDelivery:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: ${self:custom.stage}-SQSQueueEmailDelivery
+  EmailDeliveryQueueSNSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref SNSTopicEmailDelivery
+      Endpoint: !GetAtt
+        - SQSQueueEmailDelivery
+        - Arn
+      Protocol: sqs
+      RawMessageDelivery: 'true'
+
+  SQSSNSPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Id: "PushEmailDeliveryToSQSPolicy"
+        Statement:
+          - Sid: "allow-sns-to-send-message-to-sqs"
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - 'sqs:SendMessage'
+            Resource: !GetAtt 'SQSQueueEmailDelivery.Arn'
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref 'SNSTopicEmailDelivery'
+      Queues:
+        - !Ref SQSQueueEmailDelivery
+
+  SESConfigurationSetEmailDelivery:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: ${self:custom.sesConfigurationSetName}
+
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ses-configurationseteventdestination.html
+  # > You can't specify Amazon SNS event destinations in CloudFormation templates.
+  # hence add manually
+  # SESConfSetEventDestinationEmailDelivery:
+  #   Type: AWS::SES::ConfigurationSetEventDestination
+  #   Properties:
+  #     ConfigurationSetName: ${self:custom.sesConfigurationSetName}
+  #     EventDestination:
+  #       Name: SNSConfSetEventDestEmailDelivery
+  #       Enabled: true
+  #       MatchingEventTypes:
+  #         - send
+  #         - reject
+  #         - bounce
+  #         - complaint
+  #         - delivery
+  #         - open
+  #         - click

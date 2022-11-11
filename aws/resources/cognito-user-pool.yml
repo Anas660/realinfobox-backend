@@ -1,0 +1,121 @@
+Resources:
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      # Generate a name based on the stage
+      UserPoolName: ${self:custom.serviceStage}-user-pool
+      # Set email as an alias
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      MfaConfiguration: OFF
+      LambdaConfig:
+        CustomMessage: ${self:custom.prefixes.arn.function}:${self:custom.serviceStage}-customMessage
+        # CustomMessage: !GetAtt CustomMessageLambdaFunction.Arn
+      # SmsConfiguration:
+      #   SnsCallerArn: !GetAtt SNSRole.Arn
+      # SmsVerificationMessage: " Kód pre potvrdenie vášho telefónneho čísla: {####}"
+      # AdminCreateUserConfig:
+      #   InviteMessageTemplate:
+      #     # EmailMessage: String
+      #     # EmailSubject: String
+      #     SMSMessage: " Vaše užívateľské meno je {username} a dočasné heslo: {####}"
+
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          RequireUppercase: true
+          TemporaryPasswordValidityDays: 0
+
+      Schema:
+        - Name: "deleted_at"
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+
+        - Name: "on_hold"
+          AttributeDataType: Boolean
+          Mutable: true
+          Required: false
+
+        - Name: "campaigns_enabled"
+          AttributeDataType: Boolean
+          Mutable: true
+          Required: false
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      # Generate an app client name based on the stage
+      ClientName: ${self:custom.serviceName}-${self:custom.stage}-user-pool-client
+      UserPoolId:
+        Ref: CognitoUserPool
+      ExplicitAuthFlows:
+        - USER_PASSWORD_AUTH
+      GenerateSecret: false
+
+  #user pool groups
+  CognitoUserPoolGroupSuperadmins:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        Description: "Superadmins"
+        GroupName: "superadmins"
+        UserPoolId:
+          Ref: CognitoUserPool
+  CognitoUserPoolGroupAdmins:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        Description: "Admins"
+        GroupName: "admins"
+        UserPoolId:
+          Ref: CognitoUserPool
+  CognitoUserPoolGroupEditors:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        Description: "Editors"
+        GroupName: "editors"
+        UserPoolId:
+          Ref: CognitoUserPool
+  CognitoUserPoolGroupUsers:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        Description: "Users"
+        GroupName: "users"
+        UserPoolId:
+          Ref: CognitoUserPool
+  CognitoUserPoolGroupDemoUsers:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        Description: "Demo Users"
+        GroupName: "demo"
+        UserPoolId:
+          Ref: CognitoUserPool
+  CognitoUserPoolGroupRealityAgents:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        Description: "Reality Agents"
+        GroupName: "reality_agents"
+        UserPoolId:
+          Ref: CognitoUserPool
+
+  CustomMessageInvocationPermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: ${self:custom.prefixes.arn.function}:${self:custom.serviceStage}-customMessage
+        Principal: cognito-idp.amazonaws.com
+        SourceArn: !GetAtt CognitoUserPool.Arn
+
+# Print out the Id of the User Pool that is created
+Outputs:
+  UserPoolId:
+    Value:
+      Ref: CognitoUserPool
+
+  UserPoolClientId:
+    Value:
+      Ref: CognitoUserPoolClient

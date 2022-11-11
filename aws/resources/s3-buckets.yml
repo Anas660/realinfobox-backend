@@ -1,0 +1,113 @@
+Resources:
+  S3BucketImages:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${self:custom.s3ImagesBucketName}
+      # Set the CORS policy
+      CorsConfiguration:
+        CorsRules:
+          -
+            AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            MaxAge: 3000
+
+  ImagesBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: S3BucketImages
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - "s3:GetObject"
+              - "s3:ListBucket"
+            Effect: "Allow"
+            Resource:
+              - !GetAtt S3BucketImages.Arn
+              - !Join [ '/',[!GetAtt S3BucketImages.Arn, '*']]
+            Principal: "*"
+            # Condition:
+            #   StringLike:
+            #     aws:Referer:
+            #       - "https://realinfobox.netlify.com/*"
+            #       - "http://localhost/*"
+
+  ImagesBucketLambdaPermissionAvatarsS3:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt ImagesBucketLambdaFunction.Arn
+      Principal: 's3.amazonaws.com'
+      Action: 'lambda:InvokeFunction'
+      SourceAccount:
+        Ref: AWS::AccountId
+      SourceArn: !GetAtt S3BucketImages.Arn
+
+  S3BucketReports:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${self:custom.s3ReportsBucketName}
+      # Set the CORS policy
+      CorsConfiguration:
+        CorsRules:
+          -
+            AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            MaxAge: 100
+
+  ReportsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: S3BucketReports
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - "s3:GetObject"
+              - "s3:ListBucket"
+            Effect: "Allow"
+            Resource:
+              - !GetAtt S3BucketReports.Arn
+              - !Join [ '/',[!GetAtt S3BucketReports.Arn, '*']]
+            Principal: "*"
+            # Condition:
+            #   StringLike:
+            #     aws:Referer:
+            #       - "https://realinfobox.netlify.com/*"
+            #       - "http://localhost/*"
+
+  ReportsBucketLambdaPermissionS3:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt ReportsBucketLambdaFunction.Arn
+      Principal: 's3.amazonaws.com'
+      Action: 'lambda:InvokeFunction'
+      SourceAccount:
+        Ref: AWS::AccountId
+      SourceArn: !GetAtt S3BucketReports.Arn
+
+# Print out the name of the bucket that is created
+Outputs:
+  ImagesBucketName:
+    Value:
+      Ref: S3BucketImages
+  ReportsBucketName:
+    Value:
+      Ref: S3BucketReports

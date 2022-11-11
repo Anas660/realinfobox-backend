@@ -1,0 +1,27 @@
+Resources:
+  SQSQueueEmailing:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: SQSQueueEmailing-${self:custom.stage}
+
+  SQSQueueDripsEmailing:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: SQSQueueDripsEmailing-${self:custom.stage}
+
+  # SQSSNSPolicy:
+  #   Type: AWS::SQS::QueuePolicy
+  #   Properties:
+  #     PolicyDocument:
+  #       Version: "2012-10-17"
+  #       Id: "PushEmailDeliveryToSQSPolicy"
+  #       Statement:
+  #         - Sid: "allow-sqs"
+  #           Effect: Allow
+  #           Principal: '*'
+  #           Action:
+  #             - 'sqs:*'
+  #           Resource: '*'
+
+  #     Queues:
+  #       - !Ref SQSQueueEmailing

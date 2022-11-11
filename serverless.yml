@@ -1,0 +1,312 @@
+service: realinfobox
+org: mvrska
+app: realinfobox
+useDotenv: true
+
+custom:
+  serviceName: realinfobox
+  stage: ${opt:stage, self:provider.stage}
+  serviceStage: ${self:custom.serviceName}-${self:custom.stage}
+  region: us-east-1
+
+  applicationTable: '${self:custom.serviceStage}-app-table'
+  mailingListTable: '${self:custom.serviceStage}-mailing-list-table'
+  statisticTable: '${self:custom.serviceStage}-statistic-table'
+  campaignDeliveryTable: '${self:custom.serviceStage}-campaign-delivery-table'
+  dripDeliveryTable: '${self:custom.serviceStage}-drip-delivery-table'
+
+  s3ImagesBucketName: ${self:custom.serviceStage}-images
+  s3ReportsBucketName: ${self:custom.serviceStage}-reports
+
+  dynamodb:
+    stages:
+      - dev
+      - staging
+      - prod
+      - v1
+
+  serviceEndpoint: ${cf:${self:custom.serviceStage}.ServiceEndpoint}
+  cognitoPoolId: ${cf:${self:custom.serviceStage}.UserPoolId}
+  cognitoPoolClientId: ${cf:${self:custom.serviceStage}.UserPoolClientId}
+
+  sesConfigurationSetName: SESConfSetEmailDelivery-${self:custom.stage}
+
+  serverless-offline:
+    httpPort: 4000
+
+  prefixes: ${file(aws/prefixes.yml)}
+
+provider:
+  name: aws
+  #stage: 'v1'
+  stage: 'staging'
+  #stage: ${opt:stage, self:provider.stage}
+  runtime: nodejs14.x
+  region: ${self:custom.region}
+  endpointType: REGIONAL
+  logs:
+    websocket: true
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:BatchGetItem
+        - dynamodb:BatchWriteItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - !GetAtt ApplicationTable.Arn
+        - !Join [ '/',[!GetAtt ApplicationTable.Arn, index/*]]
+        - !GetAtt MailingListTable.Arn
+        - !Join [ '/',[!GetAtt MailingListTable.Arn, index/*]]
+        - !GetAtt StatisticTable.Arn
+        - !Join [ '/',[!GetAtt StatisticTable.Arn, index/*]]
+        - !GetAtt CampaignDeliveryTable.Arn
+        - !Join [ '/',[!GetAtt CampaignDeliveryTable.Arn, index/*]]
+        - !GetAtt DripDeliveryTable.Arn
+        - !Join [ '/',[!GetAtt DripDeliveryTable.Arn, index/*]]
+
+
+    - Effect: Allow
+      Action:
+        - cognito-idp:AddCustomAttributes
+        - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminRemoveUserFromGroup
+        - cognito-idp:AdminConfirmSignUp
+        - cognito-idp:AdminDisableUser
+        - cognito-idp:AdminCreateUser
+        - cognito-idp:AdminEnableUser
+        - cognito-idp:AdminGetUser
+        - cognito-idp:AdminDeleteUser
+        - cognito-idp:AdminInitiateAuth
+        - cognito-idp:AdminListGroupsForUser
+        - cognito-idp:AdminUpdateUserAttributes
+        - cognito-idp:AdminUserGlobalSignOut
+        - cognito-idp:AdminSetUserPassword
+        - cognito-idp:ListUsersInGroup
+        - sns:publish
+        - lambda:InvokeFunction
+
+      Resource:
+        - !GetAtt CognitoUserPool.Arn
+
+    - Effect: "Allow"
+      Action:
+        - "ses:SendEmail"
+        - "ses:SendRawEmail"
+        - "ses:ListIdentities"
+        - "ses:GetIdentityVerificationAttributes"
+        - "ses:VerifyEmailIdentity"
+        - "ses:DeleteIdentity"
+        - "sqs:*"
+        # - "sqs:DeleteMessage"
+        # - "sqs:ReceiveMessage"
+        # - "sqs:GetQueueAttributes"
+        - 'sns:Publish'
+
+      Resource: "*"
+
+    - Effect: Allow
+      Action:
+        - "execute-api:ManageConnections"
+      Resource:
+        - "arn:aws:execute-api:*:*:**/@connections/*"
+
+    - Effect: Allow
+      Action:
+        - "s3:GetObject"
+        - "s3:PutObject"
+        - "s3:DeleteObject"
+        - "s3:ListObjectsV2"
+      Resource:
+        - !GetAtt S3BucketImages.Arn
+        - !Join [ '/',[!GetAtt S3BucketImages.Arn, '*']]
+        - !GetAtt S3BucketReports.Arn
+        - !Join [ '/',[!GetAtt S3BucketReports.Arn, '*']]
+
+  environment:
+    ACCOUNT_ID: ${param:ACCOUNT_ID, env:ACCOUNT_ID}
+    API_URL: ${param:API_URL, env:API_URL}
+    APP_REGION: ${self:custom.region}
+    APP_SECRET: ${param:APP_SECRET, env:APP_SECRET}
+    APP_STAGE: ${param:APP_STAGE, env:APP_STAGE, 'staging'}
+    APP_TABLE: ${self:custom.applicationTable}
+    CAMPAIGN_DELIVERY_TABLE: ${self:custom.campaignDeliveryTable}
+    COGNITO_CLIENT_ID: ${self:custom.cognitoPoolClientId}
+    COGNITO_POOL_ID: ${self:custom.cognitoPoolId}
+    DRIP_DELIVERY_TABLE: ${self:custom.dripDeliveryTable}
+    EMAIL_WIDTH: 600
+    FRONTEND_URL: ${param:FRONTEND_URL, env:FRONTEND_URL}
+    MAILING_LIST_TABLE: ${self:custom.mailingListTable}
+    STATISTIC_TABLE: ${self:custom.statisticTable}
+    S3_IMAGES_BUCKET: ${self:custom.s3ImagesBucketName}
+    S3_REPORTS_BUCKET: ${self:custom.s3ReportsBucketName}
+    #SENTRY_URL: ${param:SENTRY_URL, env:SENTRY_URL}
+    SES_CONFIGURATION_SET_NAME: ${self:custom.sesConfigurationSetName}
+    SES_EMAIL: ${param:SES_EMAIL, env:SES_EMAIL}
+    SLS_DEBUG: '*'
+    SQS_DRIPS_QUEUE_NAME: ${param:SQS_DRIPS_QUEUE_NAME, env:SQS_DRIPS_QUEUE_NAME}
+    SQS_MAILING_QUEUE_NAME: ${param:SQS_MAILING_QUEUE_NAME, env:SQS_MAILING_QUEUE_NAME}
+    TEST_EMAIL: ${param:TEST_EMAIL, 'test.email.real.info.box@gmail.com'}
+
+  tags:
+    project: ${self:custom.serviceName}
+
+  deploymentPrefix: ${self:custom.serviceName}-serverless
+
+  # profile: ${param:AWS_PROFILE}
+
+  versionFunctions: false
+
+functions:
+  app:
+    handler: index.handler
+    timeout: 660
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: '{proxy+}'
+          method: ANY
+          cors: true
+  # custom message lambda for email/sms modifications
+  customMessage:
+    handler: customMessage.handler
+    events:
+      - cognitoUserPool:
+          pool: ${self:custom.serviceStage}-user-pool
+          trigger: CustomMessage
+          existing: true
+
+  postConfirmation:
+    handler: postConfirmation.handler
+    events:
+      - cognitoUserPool:
+          pool: ${self:custom.serviceStage}-user-pool
+          trigger: PostConfirmation
+          forceDeploy: true
+          existing: true
+
+  imagesBucket:
+    handler: imagesBucket.handler
+    events:
+      - s3:
+          event: s3:ObjectCreated:*
+          bucket: ${self:custom.s3ImagesBucketName}
+          existing: true
+      - s3:
+          event: s3:ObjectRemoved:*
+          bucket: ${self:custom.s3ImagesBucketName}
+          existing: true
+
+  reportsBucket:
+    handler: reportsBucket.handler
+    events:
+      - s3:
+          event: s3:ObjectCreated:*
+          bucket: ${self:custom.s3ReportsBucketName}
+          existing: true
+      - s3:
+          event: s3:ObjectRemoved:*
+          bucket: ${self:custom.s3ReportsBucketName}
+          existing: true
+
+  addClientsGroupAndTransferData:
+    handler: addClientsGroupAndTransferData.handler
+    description: creates clients group, add clients to created group, transfer Cognito user data to DynamoDB
+
+  scheduledCampaignSender:
+    handler: scheduledCampaignSender.handler
+    timeout: 60
+    events:
+      - schedule: cron(0/30 * * * ? *)
+
+  scheduledDripSender:
+    handler: scheduledDripSender.handler
+    timeout: 60
+    events:
+      - schedule: cron(15 0 * * ? *)
+
+  scheduledEdmontenReportDataImport:
+    handler: scheduledEdmontenReportDataImport.handler
+    timeout: 700
+    events:
+      - schedule: cron(0 1 1 * ? *)
+
+  recalculateEdmontonAveragePriceYTD:
+    handler: recalculateEdmontonAveragePriceYTD.handler
+    timeout: 700
+    events:
+      - schedule: cron(0 1 1 * ? *)
+
+  importWinnipegDataEntry:
+    handler: importWinnipegDataEntry.handler
+    timeout: 700
+    events:
+      - schedule: cron(0 1 10,15,20,25 * ? *)
+
+  updateUserVerificationAttributes:
+    handler: updateUserVerificationAttributes.handler
+    timeout: 700
+    events:
+      - schedule: cron(0/30 * * * ? *)
+
+  emailer:
+    handler: emailer.handler
+    timeout: 300
+    reservedConcurrency: 1
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSQueueEmailing
+              - Arn
+
+  dripEmailer:
+    handler: dripEmailer.handler
+    reservedConcurrency: 1
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSQueueDripsEmailing
+              - Arn
+        # arn: !GetAtt MailingQueue.Arn
+
+  emailDelivery:
+    handler: email-delivery.handler
+    reservedConcurrency: 3
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSQueueEmailDelivery
+              - Arn
+
+  handleAppTableEvents:
+    handler: handleAppTableEvents.handler
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - ApplicationTable
+              - StreamArn
+
+resources:
+  - ${file(aws/resources/roles.yml)}
+  - ${file(aws/resources/dynamodb-tables.yml)}
+  - ${file(aws/resources/cognito-user-pool.yml)}
+  - ${file(aws/resources/s3-buckets.yml)}
+  - ${file(aws/resources/sqs-queues.yml)}
+  - ${file(aws/resources/email-delivery-stats.yml)}
+
+plugins:
+  - serverless-dynamodb-local
+  - serverless-offline
+  - serverless-dotenv-plugin

@@ -1,0 +1,204 @@
+Resources:
+  ApplicationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.applicationTable}
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+        - AttributeName: entity
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: reverse
+          KeySchema:
+            - AttributeName: sk
+              KeyType: HASH
+            - AttributeName: pk
+              KeyType: RANGE
+          Projection:
+              ProjectionType: ALL
+        - IndexName: entity
+          KeySchema:
+            - AttributeName: entity
+              KeyType: HASH
+            - AttributeName: pk
+              KeyType: RANGE
+          Projection:
+              ProjectionType: ALL
+
+  #
+  MailingListTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.mailingListTable}
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: reverse
+          KeySchema:
+            - AttributeName: sk
+              KeyType: HASH
+            - AttributeName: pk
+              KeyType: RANGE
+          Projection:
+              ProjectionType: ALL
+
+  CampaignDeliveryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.campaignDeliveryTable}
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: reverse
+          KeySchema:
+            - AttributeName: sk
+              KeyType: HASH
+            - AttributeName: pk
+              KeyType: RANGE
+          Projection:
+              ProjectionType: ALL
+
+  StatisticTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.statisticTable}
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: reverse
+          KeySchema:
+            - AttributeName: sk
+              KeyType: HASH
+            - AttributeName: pk
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  DripDeliveryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.dripDeliveryTable}
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: reverse
+          KeySchema:
+            - AttributeName: sk
+              KeyType: HASH
+            - AttributeName: pk
+              KeyType: RANGE
+          Projection:
+              ProjectionType: ALL
+
+  # ReportsTable:
+  #   Type: AWS::DynamoDB::Table
+  #   Properties:
+  #     TableName: ${self:custom.reportsTable}
+  #     BillingMode: PAY_PER_REQUEST
+  #     StreamSpecification:
+  #       StreamViewType: NEW_AND_OLD_IMAGES
+  #     AttributeDefinitions:
+  #       - AttributeName: pk
+  #         AttributeType: S
+  #       - AttributeName: sk
+  #         AttributeType: S
+  #     KeySchema:
+  #       - AttributeName: pk
+  #         KeyType: HASH
+  #       - AttributeName: sk
+  #         KeyType: RANGE
+  #     GlobalSecondaryIndexes:
+  #       - IndexName: reverse
+  #         KeySchema:
+  #           - AttributeName: sk
+  #             KeyType: HASH
+  #           - AttributeName: pk
+  #             KeyType: RANGE
+  #         Projection:
+  #             ProjectionType: ALL
+
+  # ContentPublishDeliveryTable:
+  #   Type: AWS::DynamoDB::Table
+  #   Properties:
+  #     TableName: ${self:custom.campaignDeliveryTable}
+  #     BillingMode: PAY_PER_REQUEST
+  #     StreamSpecification:
+  #       StreamViewType: NEW_AND_OLD_IMAGES
+  #     AttributeDefinitions:
+  #       - AttributeName: pk
+  #         AttributeType: S
+  #       - AttributeName: sk
+  #         AttributeType: S
+  #     KeySchema:
+  #       - AttributeName: pk
+  #         KeyType: HASH
+  #       - AttributeName: sk
+  #         KeyType: RANGE
+  #     GlobalSecondaryIndexes:
+  #       - IndexName: reverse
+  #         KeySchema:
+  #           - AttributeName: sk
+  #             KeyType: HASH
+  #           - AttributeName: pk
+  #             KeyType: RANGE
+  #         Projection:
+  #             ProjectionType: ALL
+  # #

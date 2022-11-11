@@ -1,0 +1,29 @@
+{
+  "Winnipeg": {
+    "North": [],
+    "West": [],
+    "South West": [],
+    "South East": [],
+    "Downtown": [],
+    "North East": [],
+    "Rural Municipality": [
+      "1W & 5W - RM of Headingley",
+      "3P - RM of East St. Paul",
+      "R02 - RM of St. Clements",
+      "R03 - RM of Brokenhead (Beausejour, Tyndall)",
+      "R04 - RM of Springfield (Oakbank and Dugald)",
+      "R05 - RM of Tache (Lorette, Landmark)",
+      "R06 - RM of St. Anne (Ste Anne)",
+      "R07 - RM of Ritchot (Niverville, Ste Agathe, St. Adolphe, Ile des Chenes)",
+      "R08 - RM of Macdonald (Oak Bluff, La Salle, Sanford)",
+      "R12 - RM of Rockwood & Woodlands (Stonewall, Stony Mountain)",
+      "R13 - RM of St. Andrews",
+      "R14 - City of Selkirk",
+      "R15 - RM of West St. Paul",
+      "R16 - City of Steinbach and RM of Hanover",
+      "R26 - Lake Winnipeg West Side Beaches",
+      "R27 - Lake Winnipeg East Side Beaches"
+    ]
+
+  }
+}
