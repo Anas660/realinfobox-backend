@@ -212,7 +212,7 @@ const self = module.exports = {
 
     return {
       ...subscriptions,
-      data: subscriptions?.data?.filter((subscription) => subscription.active),
+      data: subscriptions?.data?.filter((subscription) => subscription.status === "active"),
     };
   },
   createSession: async (user, price_id, mode) => {
