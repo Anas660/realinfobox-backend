@@ -207,12 +207,12 @@ const self = module.exports = {
   },
   listSubscription: async () => {
     const subscriptions = await stripe.subscriptions.list({
-      limit: 1000,
+      limit: 100,
     });
 
     return {
       ...subscriptions,
-      data: subscriptions?.data?.filter((subscription) => subscription.status === "active"),
+      data: subscriptions?.data?.filter((subscription) => subscription.items.data[0].type === "recurring"),
     };
   },
   createSession: async (user, price_id, mode) => {
