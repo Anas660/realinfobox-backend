@@ -11,9 +11,12 @@ router.get('/products', [
   hasOneRole('admin', 'editor', 'user'),
 ], controller.listProducts);
 
-router.get('/subscription', [
+router.get('/subscriptions', [
   hasOneRole('admin', 'editor', 'user'),
-], controller.listSubscription);
+], controller.listSubscriptions);
+router.get('/mySubscriptions', [
+  hasOneRole('admin', 'editor', 'user'),
+], controller.listMySubscriptions);
 
 router.post('/session', [
   hasOneRole('admin', 'editor', 'user'),

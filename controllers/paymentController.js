@@ -34,9 +34,19 @@ const self = module.exports = {
       fail(res, error);
     }
   },
-  listSubscription: async (req, res) => {
+  listSubscriptions: async (req, res) => {
     try {
-      const subscriptions = await paymentService.listSubscription();
+      const subscriptions = await paymentService.listSubscriptions();
+
+      res.json(subscriptions);
+
+    } catch (error) {
+      fail(res, error);
+    }
+  },
+  listMySubscriptions: async (req, res) => {
+    try {
+      const subscriptions = await paymentService.listMySubscriptions();
 
       res.json(subscriptions);
 

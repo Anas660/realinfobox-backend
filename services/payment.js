@@ -205,7 +205,7 @@ const self = module.exports = {
       data: products?.data?.filter((product) => product.active),
     };
   },
-  listSubscription: async () => {
+  listSubscriptions: async () => {
     const subscriptions = await stripe.subscriptions.list({
       limit: 100,
     });
@@ -213,6 +213,16 @@ const self = module.exports = {
     return {
       ...subscriptions,
       data: subscriptions?.data?.filter((subscription) => subscription.items.data[0].type === "recurring"),
+    };
+  },
+  listMySubscriptions: async () => {
+    const subscriptions = await stripe.subscriptions.list({
+      limit: 100,
+    });
+
+    return {
+      ...subscriptions,
+      data: subscriptions?.data?.filter((subscription) => subscription.items.data[0].status === "active"),
     };
   },
   createSession: async (user, price_id, mode) => {
