@@ -212,7 +212,7 @@ const self = module.exports = {
 
     return {
       ...subscriptions,
-      data: subscriptions?.data?.filter((subscription) => subscription?.items?.data[0].type === "recurring"),
+      data: subscriptions?.data,
     };
   },
   listMySubscriptions: async () => {
